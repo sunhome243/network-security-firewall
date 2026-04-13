@@ -3,12 +3,16 @@ from solution.state_table import StateTable
 
 
 class Firewall:
+    """Combine stateless rule checks with lightweight TCP state tracking."""
+
     def __init__(self, rule_engine):
+        """Create a firewall with a rule engine and connection state table."""
         self.rule_engine = rule_engine
         self.state_table = StateTable()
         self.logged = []
 
     def process_packet(self, packet):
+        """Process one packet and return the resulting firewall action."""
         # established connections bypass rule evaluation
         if self.state_table.is_established(packet):
             return "ALLOW"
@@ -27,6 +31,7 @@ class Firewall:
                 if packet not in self.logged:
                     self.logged.append(packet)
 
+            # update connection state after making the current packet decision
             self.state_table.update(packet, action)
 
         return action
