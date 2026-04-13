@@ -107,6 +107,40 @@ def test_reverse_flow():
     assert fw.process_packet(reverse_pkt) == "ALLOW"
 
 
+def test_log_action():
+    fw = Firewall(RuleEngine([
+        Rule("LOG", "ALL", "ANY", "ANY", "ANY")
+    ]))
+    pkt = make_packet()
+    assert fw.process_packet(pkt) == "LOG"
+
+
+def test_log_records_packet():
+    fw = Firewall(RuleEngine([
+        Rule("LOG", "ALL", "ANY", "ANY", "ANY")
+    ]))
+    pkt = make_packet()
+    fw.process_packet(pkt)
+    assert pkt in fw.logged
+
+
+def test_log_catch_all():
+    fw = Firewall(RuleEngine([
+        Rule("ALLOW", "TCP", "ANY", "ANY", 80),
+        Rule("DROP",  "TCP", "ANY", "ANY", 23),
+        Rule("LOG",   "ALL", "ANY", "ANY", "ANY")
+    ]))
+    assert fw.process_packet(make_packet(dst_port=80)) == "ALLOW"
+    assert len(fw.logged) == 0
+
+    assert fw.process_packet(make_packet(dst_port=23)) == "DROP"
+    assert len(fw.logged) == 0
+
+    pkt = make_packet(dst_port=9999)
+    assert fw.process_packet(pkt) == "LOG"
+    assert pkt in fw.logged
+
+
 def test():
     test_basic_allow()
     test_basic_drop()
@@ -116,6 +150,9 @@ def test():
     test_established_flow_bypass_rules()
     test_udp_not_stateful()
     test_reverse_flow()
+    test_log_action()
+    test_log_records_packet()
+    test_log_catch_all()
     print("All tests passed!")
 
 

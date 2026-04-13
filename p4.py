@@ -1,6 +1,6 @@
 import json
-from firewall import Firewall
-from rule_engine import Rule
+from solution.firewall import Firewall
+from solution.rule_engine import Rule
 
 rules = [
 ]
