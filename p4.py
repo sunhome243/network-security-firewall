@@ -1,11 +1,11 @@
 import json
 from solution.firewall import Firewall
-from solution.rule_engine import Rule
+from solution.rule_engine import Rule, RuleEngine
 
 rules = [
 ]
 
-fw = Firewall(rules)
+fw = Firewall(RuleEngine(rules))
 
 with open("packets.json") as f:
     packets = json.load(f)

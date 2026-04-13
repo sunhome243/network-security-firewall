@@ -13,7 +13,7 @@ class Firewall:
         if self.state_table.is_established(packet):
             return "ALLOW"
 
-        # stateless filtering. match packet against rules
+        # stateless filtering: match packet against rules
         action = self.rule_engine.match(packet)
 
         # record the packet when the matched rule is LOG
@@ -22,6 +22,11 @@ class Firewall:
 
         # TCP is tracked statefully
         if packet["protocol"] == "TCP":
+            # detect anomalous behavior and log suspicious packets
+            if self.state_table.is_anomalous(packet):
+                if packet not in self.logged:
+                    self.logged.append(packet)
+
             self.state_table.update(packet, action)
 
         return action
